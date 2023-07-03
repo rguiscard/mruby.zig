@@ -33,16 +33,16 @@ jobs:
       - name: Install Zig
         uses: goto-bus-stop/setup-zig@v2
         with:
-          version: 0.11.0-dev.3289+16dbb960f
+          version: 0.11.0-dev.3909+9e0ac4449
 
       - name: Lint
         run: zig fmt --check src/*.zig && echo "OK"
 
       - name: Build
         run: |
-          zig build -fsummary -Doptimize=ReleaseSafe
+          zig build --summary all
           file ./zig-out/bin/*
           du -hs ./zig-out/bin/*
 
       - name: Test
-        run: zig build test -fsummary
+        run: zig build --summary all test

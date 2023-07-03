@@ -31,7 +31,7 @@ pub fn main() anyerror!void {
     _ = try mrb.load_file("examples/hello.rb");
 
     // Loading a program from bytecode
-    const mruby_bytecode = @ptrCast([*]const u8, @embedFile("bytecode.mrb"));
+    const mruby_bytecode = @as([*]const u8, @ptrCast(@embedFile("bytecode.mrb")));
     _ = mrb.load_irep(mruby_bytecode);
 
     // Adding a zig function to ruby
@@ -136,7 +136,7 @@ const data_type_descriptor = mruby.mrb_data_type{
 
 pub export fn dataTypeFree(mrb: *mruby.mrb_state, ptr: *anyopaque) void {
     _ = mrb;
-    const data = @ptrCast(*DataType, @alignCast(@alignOf(DataType), ptr));
+    const data = @as(*DataType, @ptrCast(@alignCast(ptr)));
     const allocator = data.allocator;
     std.log.debug("Freeing data type!", .{});
     allocator.destroy(data);
@@ -144,7 +144,7 @@ pub export fn dataTypeFree(mrb: *mruby.mrb_state, ptr: *anyopaque) void {
 
 pub export fn dataTypeGetInt(mrb: *mruby.mrb_state, self: mruby.mrb_value) mruby.mrb_value {
     const rawptr = mrb.data_get_ptr(self, &data_type_descriptor);
-    const ptr = @ptrCast(*DataType, @alignCast(@alignOf(DataType), rawptr));
+    const ptr = @as(*DataType, @ptrCast(@alignCast(rawptr)));
     return mrb.int_value(ptr.int);
 }
 
@@ -152,14 +152,14 @@ pub export fn dataTypeSetInt(mrb: *mruby.mrb_state, self: mruby.mrb_value) mruby
     var int: i64 = undefined;
     _ = mrb.get_args("i", .{&int});
     const rawptr = mrb.data_get_ptr(self, &data_type_descriptor);
-    const ptr = @ptrCast(*DataType, @alignCast(@alignOf(DataType), rawptr));
+    const ptr = @as(*DataType, @ptrCast(@alignCast(rawptr)));
     ptr.int = int;
     return self;
 }
 
 pub export fn dataTypeGetArray(mrb: *mruby.mrb_state, self: mruby.mrb_value) mruby.mrb_value {
     const rawptr = mrb.data_get_ptr(self, &data_type_descriptor);
-    const ptr = @ptrCast(*DataType, @alignCast(@alignOf(DataType), rawptr));
+    const ptr = @as(*DataType, @ptrCast(@alignCast(rawptr)));
     const array = mrb.ary_new();
     for (ptr.small_array) |val| {
         mrb.ary_push(array, mrb.int_value(val));
