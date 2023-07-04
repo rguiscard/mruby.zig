@@ -19,30 +19,56 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Install rake
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.2'
-          bundler-cache: false
+      - name: set some ENV vars (MacOS)
+        run: echo "ZIG_DIR=zig-macos-x86_64-0.11.0-dev.3909+9e0ac4449" >> ${GITHUB_ENV}
+        if: matrix.os == 'macos-latest'
 
-      - name: Checkout code
+      - name: set some ENV vars (Linux)
+        run: echo "ZIG_DIR=zig-linux-x86_64-0.11.0-dev.3909+9e0ac4449" >> ${GITHUB_ENV}
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: checkout code
         uses: actions/checkout@v3
         with:
           submodules: true
 
-      - name: Install Zig
-        uses: goto-bus-stop/setup-zig@v2
+      - name: check for zig
+        id: cache-zig
+        uses: actions/cache@v3
+        env:
+          cache-name: ${{ env.ZIG_DIR }}
         with:
-          version: 0.11.0-dev.3909+9e0ac4449
+          path: ${{ env.ZIG_DIR }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
 
-      - name: Lint
+      - if: ${{ steps.cache-zig.outputs.cache-hit != 'true' }}
+        name: download and untar zig tarball
+        run: |
+          wget https://ziglang.org/builds/${ZIG_DIR}.tar.xz
+          tar xf ${ZIG_DIR}.tar.xz
+
+      - name: add zig to PATH
+        run: echo ${PWD}/${ZIG_DIR} >> $GITHUB_PATH
+
+      - name: lint
         run: zig fmt --check src/*.zig && echo "OK"
 
-      - name: Build
+      - name: build
         run: |
           zig build --summary all
+
+      - name: test
+        run: zig build test --summary all
+
+      - name: run c example
+        run: |
+          zig build c-example
+
+      - name: run zig example
+        run: |
+          zig build zig-example
+
+      - name: examine build output
+        run: |
           file ./zig-out/bin/*
           du -hs ./zig-out/bin/*
-
-      - name: Test
-        run: zig build --summary all test

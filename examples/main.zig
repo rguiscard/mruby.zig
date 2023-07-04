@@ -30,10 +30,6 @@ pub fn main() anyerror!void {
     // Loading a program from file
     _ = try mrb.load_file("examples/hello.rb");
 
-    // Loading a program from bytecode
-    const mruby_bytecode = @as([*]const u8, @ptrCast(@embedFile("bytecode.mrb")));
-    _ = mrb.load_irep(mruby_bytecode);
-
     // Adding a zig function to ruby
     const kptr = mrb.kernel_module();
     const kval = kptr.value();
@@ -77,25 +73,25 @@ pub fn main() anyerror!void {
     mrb.define_method(boring_class, "get_var", boringClassGetVar, .{});
 
     // Dollar store repl
-    var line: [4096]u8 = undefined;
-    const stdin = std.io.getStdIn().reader();
-    const stdout = std.io.getStdOut().writer();
-    while (true) {
-        try stdout.writeAll("> ");
-        const line_read = try stdin.readUntilDelimiterOrEof(&line, '\n');
-        if (line_read) |valid_line| {
-            const returned = mrb.load_nstring(valid_line);
-            if (mrb.exc()) |exception| {
-                mrb.p(exception.value());
-                mrb.set_exc(null);
-            } else {
-                try stdout.writeAll(" => ");
-                mrb.p(returned);
-            }
-        } else {
-            break;
-        }
-    }
+    // var line: [4096]u8 = undefined;
+    // const stdin = std.io.getStdIn().reader();
+    // const stdout = std.io.getStdOut().writer();
+    // while (true) {
+    //     try stdout.writeAll("> ");
+    //     const line_read = try stdin.readUntilDelimiterOrEof(&line, '\n');
+    //     if (line_read) |valid_line| {
+    //         const returned = mrb.load_nstring(valid_line);
+    //         if (mrb.exc()) |exception| {
+    //             mrb.p(exception.value());
+    //             mrb.set_exc(null);
+    //         } else {
+    //             try stdout.writeAll(" => ");
+    //             mrb.p(returned);
+    //         }
+    //     } else {
+    //         break;
+    //     }
+    // }
 }
 
 export fn zigInRuby(mrb: *mruby.mrb_state, self: mruby.mrb_value) mruby.mrb_value {
