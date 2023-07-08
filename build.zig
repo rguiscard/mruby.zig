@@ -213,9 +213,9 @@ pub fn mrubyLib(
     });
     const mrblib = compile_mrblib_cmd.addOutputFileArg("mrblib.c");
     for (mruby_rbfiles) |file| {
-        compile_mrblib_cmd.addArg(
-            std.fs.path.join(b.allocator, &.{ src_dir, "mruby", file }) catch @panic("join"),
-        );
+        compile_mrblib_cmd.addFileSourceArg(.{
+            .path = std.fs.path.join(b.allocator, &.{ src_dir, "mruby", file }) catch @panic("join"),
+        });
     }
 
     const compile_mrbgems_cmd = b.addRunArtifact(mrbc_exe);
@@ -231,11 +231,11 @@ pub fn mrubyLib(
         if (!std.mem.eql(u8, gem.name, "mruby_compiler")) {
             for (gem.rbfiles) |src| {
                 if (gem.builtin) {
-                    compile_mrbgems_cmd.addArg(
-                        std.fs.path.join(b.allocator, &.{ src_dir, "mruby", src }) catch @panic("join"),
-                    );
+                    compile_mrbgems_cmd.addFileSourceArg(.{
+                        .path = std.fs.path.join(b.allocator, &.{ src_dir, "mruby", src }) catch @panic("join"),
+                    });
                 } else {
-                    compile_mrbgems_cmd.addArg(src);
+                    compile_mrbgems_cmd.addFileSourceArg(.{ .path = src });
                 }
             }
         }
