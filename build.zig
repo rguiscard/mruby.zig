@@ -207,6 +207,8 @@ pub fn mrubyLib(
 
     const compile_mrblib_cmd = b.addRunArtifact(mrbc_exe);
     compile_mrblib_cmd.addArgs(&.{
+        // TODO: only do this for `optimize=Debug` builds
+        "-g -B%{funcname} -o-", // `-g` is required for line numbers
         "-B",
         "entrypoint_mrblib",
         "-o",
@@ -220,6 +222,8 @@ pub fn mrubyLib(
 
     const compile_mrbgems_cmd = b.addRunArtifact(mrbc_exe);
     compile_mrbgems_cmd.addArgs(&.{
+        // TODO: only do this for `optimize=Debug` builds
+        "-g -B%{funcname} -o-", // `-g` is required for line numbers
         "-B",
         "entrypoint_mrbgems",
         "-o",
