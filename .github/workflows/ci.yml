@@ -20,11 +20,11 @@ jobs:
 
     steps:
       - name: set some ENV vars (MacOS)
-        run: echo "ZIG_DIR=zig-macos-x86_64-0.11.0-dev.3909+9e0ac4449" >> ${GITHUB_ENV}
+        run: echo "ZIG_DIR=zig-macos-x86_64-0.11.0" >> ${GITHUB_ENV}
         if: matrix.os == 'macos-latest'
 
       - name: set some ENV vars (Linux)
-        run: echo "ZIG_DIR=zig-linux-x86_64-0.11.0-dev.3909+9e0ac4449" >> ${GITHUB_ENV}
+        run: echo "ZIG_DIR=zig-linux-x86_64-0.11.0" >> ${GITHUB_ENV}
         if: matrix.os == 'ubuntu-latest'
 
       - name: checkout code

@@ -85,19 +85,17 @@ pub fn mrubyCoreLib(
         .optimize = optimize,
     });
 
-    lib.addIncludePath(
-        std.fs.path.join(b.allocator, &.{ src_dir, "mruby", "include" }) catch @panic("join"),
-    );
+    lib.addIncludePath(.{ .path = b.pathJoin(&.{ src_dir, "mruby/include" }) });
     lib.linkLibC();
 
     if (target.isDarwin()) {
-        lib.addFrameworkPath("/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk");
+        lib.addFrameworkPath(.{ .path = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk" });
     }
 
     var srcs = std.ArrayList([]const u8).init(b.allocator);
     for (mruby_srcs) |src| {
         srcs.append(
-            std.fs.path.join(b.allocator, &.{ src_dir, "mruby", src }) catch @panic("join"),
+            b.pathJoin(&.{ src_dir, "mruby", src }),
         ) catch @panic("append");
     }
     lib.addCSourceFiles(srcs.items, cflags);
@@ -120,13 +118,11 @@ pub fn mrbcExecutable(
     });
     exe.linkLibrary(mruby_core_lib);
 
-    exe.addIncludePath(
-        std.fs.path.join(b.allocator, &.{ src_dir, "mruby", "include" }) catch @panic("join"),
-    );
+    exe.addIncludePath(.{ .path = b.pathJoin(&.{ src_dir, "mruby/include" }) });
     exe.linkLibC();
 
     if (target.isDarwin()) {
-        exe.addFrameworkPath("/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk");
+        exe.addFrameworkPath(.{ .path = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk" });
     }
 
     const srcs = &[_][]const u8{
@@ -137,11 +133,7 @@ pub fn mrbcExecutable(
     var results = std.ArrayList([]const u8).init(b.allocator);
     for (srcs) |src| {
         results.append(
-            std.fs.path.join(b.allocator, &.{
-                src_dir,
-                "mruby",
-                src,
-            }) catch @panic("join"),
+            b.pathJoin(&.{ src_dir, "mruby", src }),
         ) catch @panic("append");
     }
 
@@ -167,20 +159,18 @@ pub fn mrubyLib(
         .optimize = optimize,
     });
 
-    lib.addIncludePath(
-        std.fs.path.join(b.allocator, &.{ src_dir, "mruby", "include" }) catch @panic("join"),
-    );
+    lib.addIncludePath(.{ .path = b.pathJoin(&.{ src_dir, "mruby/include" }) });
     lib.linkLibC();
     lib.linkLibrary(mruby_core_lib);
 
     if (target.isDarwin()) {
-        lib.addFrameworkPath("/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk");
+        lib.addFrameworkPath(.{ .path = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk" });
     }
     for (gems) |gem| {
         for (gem.includePaths) |path| {
-            lib.addIncludePath(
-                std.fs.path.join(b.allocator, &.{ src_dir, "mruby", path }) catch @panic("join"),
-            );
+            lib.addIncludePath(.{
+                .path = b.pathJoin(&.{ src_dir, "mruby", path }),
+            });
         }
     }
 
@@ -188,14 +178,14 @@ pub fn mrubyLib(
 
     for (mruby_srcs) |src| {
         srcs.append(
-            std.fs.path.join(b.allocator, &.{ src_dir, "mruby", src }) catch @panic("join"),
+            b.pathJoin(&.{ src_dir, "mruby", src }),
         ) catch @panic("append");
     }
     for (gems) |gem| {
         for (gem.srcs) |src| {
             if (gem.builtin) {
                 srcs.append(
-                    std.fs.path.join(b.allocator, &.{ src_dir, "mruby", src }) catch @panic("join"),
+                    b.pathJoin(&.{ src_dir, "mruby", src }),
                 ) catch @panic("append");
             } else {
                 srcs.append(src) catch @panic("append");
@@ -216,7 +206,7 @@ pub fn mrubyLib(
     const mrblib = compile_mrblib_cmd.addOutputFileArg("mrblib.c");
     for (mruby_rbfiles) |file| {
         compile_mrblib_cmd.addFileSourceArg(.{
-            .path = std.fs.path.join(b.allocator, &.{ src_dir, "mruby", file }) catch @panic("join"),
+            .path = b.pathJoin(&.{ src_dir, "mruby", file }),
         });
     }
 
@@ -236,7 +226,7 @@ pub fn mrubyLib(
             for (gem.rbfiles) |src| {
                 if (gem.builtin) {
                     compile_mrbgems_cmd.addFileSourceArg(.{
-                        .path = std.fs.path.join(b.allocator, &.{ src_dir, "mruby", src }) catch @panic("join"),
+                        .path = b.pathJoin(&.{ src_dir, "mruby", src }),
                     });
                 } else {
                     compile_mrbgems_cmd.addFileSourceArg(.{ .path = src });
@@ -329,11 +319,11 @@ pub fn mrubyLib(
         .root_source_file = generated_mrbloader.files.items[0].getFileSource(),
     });
     mrbloader_obj.linkLibC();
-    mrbloader_obj.addIncludePath(
-        std.fs.path.join(b.allocator, &.{ src_dir, "mruby", "include" }) catch @panic("join"),
-    );
+    mrbloader_obj.addIncludePath(.{
+        .path = b.pathJoin(&.{ src_dir, "mruby", "include" }),
+    });
     if (target.isDarwin()) {
-        mrbloader_obj.addFrameworkPath("/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk");
+        mrbloader_obj.addFrameworkPath(.{ .path = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk" });
     }
 
     lib.addObject(mrblib_obj);
@@ -355,17 +345,22 @@ pub fn addMruby(
 
     exe.linkLibrary(mruby_lib);
     exe.addCSourceFiles(extra_files, cflags);
-    exe.addIncludePath(
-        std.fs.path.join(b.allocator, &.{ src_dir, "mruby", "include" }) catch @panic("join"),
-    );
+
+    exe.addIncludePath(.{
+        .path = b.pathJoin(&.{ src_dir, "mruby", "include" }),
+    });
+
     if (target.isDarwin()) {
-        exe.addFrameworkPath("/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk");
+        exe.addFrameworkPath(.{ .path = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk" });
     }
 }
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+
+    const cwd = comptime std.fs.path.dirname(@src().file) orelse ".";
+    const src_dir = cwd ++ "/mruby/";
 
     //-- mrbc
 
@@ -432,7 +427,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     addMruby(b, mruby_exe, target, mruby_lib, &.{
-        "mrbgems/mruby-bin-mruby/tools/mruby/mruby.c",
+        src_dir ++ "mrbgems/mruby-bin-mruby/tools/mruby/mruby.c",
     });
     b.installArtifact(mruby_exe);
 
@@ -444,7 +439,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     addMruby(b, mirb_exe, target, mruby_lib, &.{
-        "mrbgems/mruby-bin-mirb/tools/mirb/mirb.c",
+        src_dir ++ "mrbgems/mruby-bin-mirb/tools/mirb/mirb.c",
     });
     b.installArtifact(mirb_exe);
 
@@ -461,7 +456,7 @@ pub fn build(b: *std.Build) void {
     });
     addMruby(b, unit_tests, target, mruby_lib, &.{});
     unit_tests.addModule("mruby", mruby_mod);
-    unit_tests.addCSourceFile("src/mruby_compat.c", &[_][]const u8{});
+    unit_tests.addCSourceFiles(&.{"src/mruby_compat.c"}, &.{});
 
     const run_unit_tests = b.addRunArtifact(unit_tests);
 
@@ -485,7 +480,7 @@ pub fn build(b: *std.Build) void {
     });
     addMruby(b, zig_test_exe, target, mruby_lib, &.{});
     zig_test_exe.addModule("mruby", mruby_mod);
-    zig_test_exe.addCSourceFile("src/mruby_compat.c", &[_][]const u8{});
+    zig_test_exe.addCSourceFiles(&.{"src/mruby_compat.c"}, &.{});
 
     b.installArtifact(zig_test_exe);
 
