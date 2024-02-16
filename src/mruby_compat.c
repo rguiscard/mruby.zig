@@ -324,12 +324,6 @@ mrb_value mrb_break_value_get1(struct RBreak *brk) {
 void mrb_break_value_set1(struct RBreak *brk, mrb_value val) {
     mrb_break_value_set(brk, val);
 }
-const struct RProc *mrb_break_proc_get1(struct RBreak *brk) {
-    return mrb_break_proc_get(brk);
-}
-void mrb_break_proc_set1(struct RBreak *brk, struct RProc *proc) {
-    mrb_break_proc_set(brk, proc);
-}
 uint32_t mrb_break_tag_get(struct RBreak *brk) {
     return mrb_break_tag_get(brk);
 }
