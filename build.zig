@@ -1,5 +1,4 @@
 const std = @import("std");
-const path = std.fs.path;
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -51,21 +50,23 @@ pub fn addMruby(
     exe: *std.Build.Step.Compile,
     comptime args: []const []const u8,
 ) *std.Build.Step.Run {
-    const allocator = owner.allocator;
 
-    const src_dir = path.dirname(@src().file) orelse ".";
-    const mruby_path = path.join(allocator, &.{ src_dir, "mruby" }) catch unreachable;
-    const include_path = path.join(allocator, &.{ mruby_path, "include" }) catch unreachable;
-    const library_path = path.join(allocator, &.{ mruby_path, "build", "host", "lib" }) catch unreachable;
-    const compat_path = path.join(allocator, &.{ src_dir, "src", "mruby_compat.c" }) catch unreachable;
-    const package_path = path.join(allocator, &.{ src_dir, "src", "mruby.zig" }) catch unreachable;
-    const rakefile_path = path.join(allocator, &.{ mruby_path, "Rakefile" }) catch unreachable;
+    const src_dir = std.fs.path.dirname(@src().file) orelse ".";
+    const mruby_path = owner.pathJoin(&.{ src_dir, "mruby"});
+    const include_path = owner.pathJoin(&.{ mruby_path, "include"});
+    const library_path = owner.pathJoin(&.{ mruby_path, "build", "host", "lib"});
+    const compat_path = owner.pathJoin(&.{ src_dir, "src", "mruby_compat.c"});
+    const package_path = owner.pathJoin(&.{ src_dir, "src", "mruby.zig"});
+    const rakefile_path = owner.pathJoin(&.{ mruby_path, "Rakefile"});
 
-    exe.addSystemIncludePath(include_path);
-    exe.addLibraryPath(library_path);
+    exe.addSystemIncludePath(.{ .path = include_path });
+    exe.addLibraryPath(.{ .path = library_path });
     exe.linkSystemLibrary("mruby");
     exe.linkLibC();
-    exe.addCSourceFile(compat_path, &.{});
+    exe.addCSourceFile(.{
+      .file = .{ .path = compat_path },
+      .flags = &[_][]const u8 {}
+    });
 
     const mod = owner.createModule(.{
         .source_file = .{ .path = package_path },

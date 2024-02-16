@@ -33,7 +33,7 @@ jobs:
       - name: Install Zig
         uses: goto-bus-stop/setup-zig@v2
         with:
-          version: 0.11.0-dev.3909+9e0ac4449
+          version: 0.11.0
 
       - name: Lint
         run: zig fmt --check src/*.zig && echo "OK"
