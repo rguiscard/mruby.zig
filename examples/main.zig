@@ -57,7 +57,7 @@ pub fn main() anyerror!void {
     const fancy_class = try mrb.define_class("FancyClass", mrb.object_class());
 
     // Custom data types
-    var fancy_data = try allocator.create(DataType);
+    const fancy_data = try allocator.create(DataType);
     fancy_data.* = DataType{
         .int = 1337,
         .small_array = .{ 1, 2, 3, 4 },

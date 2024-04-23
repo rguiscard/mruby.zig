@@ -1328,9 +1328,10 @@ pub const mrb_state = opaque {
         return mrb_show_copyright(self);
     }
 
-    pub fn format(self: *Self, fmt: [*:0]const u8, args: anytype) mrb_value {
-        return @call(.auto, mrb_format, .{ self, fmt } ++ args);
-    }
+//  FIXME: error on Zig 0.12, probably due to collide of function 
+//    pub fn format(self: *Self, fmt: [*:0]const u8, args: anytype) mrb_value {
+//        return @call(.auto, mrb_format, .{ self, fmt } ++ args);
+//    }
 
     // mruby/array.h
 

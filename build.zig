@@ -6,7 +6,7 @@ pub fn build(b: *std.Build) void {
 
     const exe = b.addExecutable(.{
         .name = "mruby-zig",
-        .root_source_file = .{ .path = "examples/main.zig" },
+        .root_source_file = b.path("examples/main.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -33,7 +33,7 @@ pub fn build(b: *std.Build) void {
     run_step.dependOn(&run_cmd.step);
 
     const unit_tests = b.addTest(.{
-        .root_source_file = .{ .path = "examples/main.zig" },
+        .root_source_file = b.path("examples/main.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -51,27 +51,22 @@ pub fn addMruby(
     comptime args: []const []const u8,
 ) *std.Build.Step.Run {
 
-    const src_dir = std.fs.path.dirname(@src().file) orelse ".";
-    const mruby_path = owner.pathJoin(&.{ src_dir, "mruby"});
-    const include_path = owner.pathJoin(&.{ mruby_path, "include"});
-    const library_path = owner.pathJoin(&.{ mruby_path, "build", "host", "lib"});
-    const compat_path = owner.pathJoin(&.{ src_dir, "src", "mruby_compat.c"});
-    const package_path = owner.pathJoin(&.{ src_dir, "src", "mruby.zig"});
-    const rakefile_path = owner.pathJoin(&.{ mruby_path, "Rakefile"});
+    const src_path = "src";
+    const mruby_path = "mruby";
 
-    exe.addSystemIncludePath(.{ .path = include_path });
-    exe.addLibraryPath(.{ .path = library_path });
+    exe.addSystemIncludePath(owner.path(owner.pathJoin(&.{mruby_path, "include"})));
+    exe.addLibraryPath(owner.path(owner.pathJoin(&.{mruby_path, "build", "host", "lib"})));
     exe.linkSystemLibrary("mruby");
     exe.linkLibC();
     exe.addCSourceFile(.{
-      .file = .{ .path = compat_path },
+      .file = owner.path(owner.pathJoin(&.{src_path, "mruby_compat.c"})),
       .flags = &[_][]const u8 {}
     });
 
-    const mod = owner.createModule(.{
-        .source_file = .{ .path = package_path },
+    const mod = owner.addModule("mruby", .{ 
+      .root_source_file = owner.path(owner.pathJoin(&.{src_path, "mruby.zig"})),
     });
-    exe.addModule("mruby", mod);
+    exe.root_module.addImport("mruby", mod);
 
     const default_args = &[_][]const u8{
         "rake",
@@ -79,7 +74,7 @@ pub fn addMruby(
         "-C",
         mruby_path,
         "-f",
-        rakefile_path,
+        "Rakefile",
     };
 
     const build_mruby = owner.addSystemCommand(default_args ++ args);
