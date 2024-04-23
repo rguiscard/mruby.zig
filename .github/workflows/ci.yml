@@ -22,7 +22,7 @@ jobs:
       - name: Install rake
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: '3.3'
           bundler-cache: false
 
       - name: Checkout code
@@ -33,7 +33,7 @@ jobs:
       - name: Install Zig
         uses: goto-bus-stop/setup-zig@v2
         with:
-          version: 0.11.0
+          version: 0.12.0
 
       - name: Lint
         run: zig fmt --check src/*.zig && echo "OK"
